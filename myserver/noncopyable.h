@@ -1,7 +1,7 @@
-#ifndef __XYZ_NONCOPYABLE_H__
-#define __XYZ_NONCOPYABLE_H__
+#ifndef __MYSERVER_NONCOPYABLE_H__
+#define __MYSERVER_NONCOPYABLE_H__
 
-namespace xyz {
+namespace myserver {
 
 class Noncopyable {
 public:

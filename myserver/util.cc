@@ -4,7 +4,7 @@
 
 #include "util.h"
 
-namespace xyz {
+namespace myserver {
 
 pid_t GetThreadId(){
     return syscall(SYS_gettid);

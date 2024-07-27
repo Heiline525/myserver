@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 # 指定项目名称
-project(xyz)
+project(myserver)
 
 # 将cmake工具脚本引入，该文件提供了编译时所需的额外处理函数
 include (cmake/utils.cmake)
@@ -34,27 +34,28 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function -Wno-builtin-macro-
 
 # 将当前目录添加到编译器的头文件搜索目录中
 include_directories(.)
-include_directories(/apps/xyz/include)
-link_directories(/apps/xyz/lib)
+include_directories(/apps/myserver/include)
+link_directories(/apps/myserver/lib)
 
 # 将所有编写的源文件设置到变量 LIB_SRC 中
 set(
     LIB_SRC
-    xyz/util.cc
+    myserver/util.cc
+    myserver/log.cc
 )
 
-# 将LIB_SRC中的文件集体打包成动态库,命名为xyz
-add_library(xyz SHARED ${LIB_SRC})
+# 将LIB_SRC中的文件集体打包成动态库,命名为myserver
+add_library(myserver SHARED ${LIB_SRC})
 
 # 调用 cmake/utils.cmake 中的方法，重定义目标源码的 __FILE__ 宏，使用相对路径的形式，避免暴露敏感信息
-force_redefine_file_macro_for_sources(xyz)
+force_redefine_file_macro_for_sources(myserver)
 
 # find_library(YAMLCPP yaml-cpp)
 
 # 将所有库文件设置到变量 LIBS 中
 set(
     LIBS
-    xyz
+    myserver
 )
 
 
@@ -64,8 +65,8 @@ set(
 # force_redefine_file_macro_for_sources(test)
 # target_link_libraries(test ${LIBS})
 
-self_add_executable(main "tests/main_test.cc" xyz "${LIBS}")
-
+self_add_executable(main_test "tests/main_test.cc" myserver "${LIBS}")
+self_add_executable(log_test "tests/log_test.cc" myserver "${LIBS}")
 
 # 指定执行文件的输出目录为当前文件夹下的bin目录
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

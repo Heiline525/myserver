@@ -1,9 +1,9 @@
-#ifndef __XYZ_SINGLETON_H__
-#define __XYZ_SINGLETON_H__
+#ifndef __MYSERVER_SINGLETON_H__
+#define __MYSERVER_SINGLETON_H__
 
 #include <memory>
 
-namespace xyz {
+namespace myserver {
 
 namespace {
 
