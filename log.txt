@@ -1,0 +1,10 @@
+[root:	2024-07-30 09:05:38]	[DEBUG]	[thread_i:2599	1]	tests/log_test.cc:17	debug message
+[root:	2024-07-30 09:05:38]	[INFO]	[thread_i:2599	1]	tests/log_test.cc:18	info message
+[root:	2024-07-30 09:05:38]	[WARN]	[thread_i:2599	1]	tests/log_test.cc:19	warn message
+[root:	2024-07-30 09:05:38]	[ERROR]	[thread_i:2599	1]	tests/log_test.cc:20	error message
+[root:	2024-07-30 09:05:38]	[FATAL]	[thread_i:2599	1]	tests/log_test.cc:21	fatal message
+[root:	2024-07-30 09:05:38]	[DEBUG]	[thread_i:2599	1]	tests/log_test.cc:23	this is a DEBUG message
+[root:	2024-07-30 09:05:38]	[INFO]	[thread_i:2599	1]	tests/log_test.cc:24	this is a INFO message
+[root:	2024-07-30 09:05:38]	[WARN]	[thread_i:2599	1]	tests/log_test.cc:25	this is a WARN message
+[root:	2024-07-30 09:05:38]	[ERROR]	[thread_i:2599	1]	tests/log_test.cc:26	this is a ERROR message
+[root:	2024-07-30 09:05:38]	[FATAL]	[thread_i:2599	1]	tests/log_test.cc:27	this is a DATAL message
