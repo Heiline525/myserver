@@ -11,6 +11,7 @@
 #include <map>
 #include "singleton.h"
 #include <stdarg.h>
+#include "util.h"
 
 /**
  * @brief 使用流式方式将日志级别level的日志写入到logger
@@ -19,8 +20,8 @@
     if (logger->getLevel() <= level)                                    \
         myserver::LogEventWrap(logger, myserver::LogEvent::ptr(         \
             new myserver::LogEvent(level, __FILE__, __LINE__, 0,        \
-            syscall(SYS_gettid), 1, time(0), "thread_i")))              \
-            .getSS()    
+            myserver::GetThreadId(), myserver::GetFiberId(), time(0),   \
+            "thread_i"))).getSS()    
  
 #define LOG_DEBUG(logger) LOG_LEVEL(logger, myserver::LogLevel::DEBUG)
 #define LOG_INFO(logger) LOG_LEVEL(logger, myserver::LogLevel::INFO)
@@ -32,8 +33,8 @@
     if(logger->getLevel() <= level)                                     \
         myserver::LogEventWrap(logger, myserver::LogEvent::ptr(         \
             new myserver::LogEvent(level, __FILE__, __LINE__, 0,        \
-            syscall(SYS_gettid), 1, time(0), "thread_i")))              \
-            .getEvent()->format(fmt, __VA_ARGS__)                                              
+            myserver::GetThreadId(), myserver::GetFiberId(), time(0),   \
+            "thread_i"))).getEvent()->format(fmt, __VA_ARGS__)                                              
     
 #define LOG_FMT_DEBUG(logger, fmt, ...) LOG_FMT_LEVEL(logger, myserver::LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define LOG_FMT_INFO(logger, fmt, ...) LOG_FMT_LEVEL(logger, myserver::LogLevel::INFO, fmt, __VA_ARGS__)
@@ -41,8 +42,8 @@
 #define LOG_FMT_ERROR(logger, fmt, ...) LOG_FMT_LEVEL(logger, myserver::LogLevel::ERROR, fmt, __VA_ARGS__)
 #define LOG_FMT_FATAL(logger, fmt, ...) LOG_FMT_LEVEL(logger, myserver::LogLevel::FATAL, fmt, __VA_ARGS__)
 
-#define GET_ROOT_LOGGER() myserver::LoggerManager::GetInstance()->getRoot()
-#define GET_LOGGER(name) myserver::LoggerManager::GetInstance()->getLogger(name)
+#define ROOT_LOGGER() myserver::LoggerMgr::GetInstance()->getRoot()
+#define LOGGER(name) myserver::LoggerMgr::GetInstance()->getLogger(name)
 
 namespace myserver {
 
@@ -99,6 +100,7 @@ private:
     std::string m_threadName;   // 线程名称
 };
 
+// 日志事件包装器
 class LogEventWrap {
 public:
   LogEventWrap(std::shared_ptr<Logger> logger, LogEvent::ptr e);
@@ -116,8 +118,7 @@ private:
 class LogFormatter {
 public:
     typedef std::shared_ptr<LogFormatter> ptr;
-    LogFormatter(const std::string& 
-                pattern="[%c:%T%d{%Y-%m-%d %H:%M:%S}]%T[%p]%T[%N:%t%T%F]%T%f:%l%T%m%n");
+    LogFormatter(const std::string& pattern);
 
     // 初始化，根据m_pattern解析日志模板
     void init();
@@ -143,7 +144,6 @@ class LogAppender {
 public:
     typedef std::shared_ptr<LogAppender> ptr;
 
-    LogAppender(LogLevel::Level level = LogLevel::DEBUG);
     virtual ~LogAppender() { };
 
     virtual void log(std::shared_ptr<Logger>, LogEvent::ptr event) = 0;
@@ -155,7 +155,7 @@ public:
 
 protected:
     LogFormatter::ptr m_formatter;
-    LogLevel::Level m_level;
+    LogLevel::Level m_level = LogLevel::DEBUG;
 };
 
 
@@ -170,15 +170,18 @@ public:
 
     void addAppender(LogAppender::ptr appender);
     void delAppender(LogAppender::ptr appender);
+    void clearAppenders();
 
     LogLevel::Level getLevel() const { return m_level; }
     void setLevel(LogLevel::Level val) { m_level = val; }
     const std::string &getName() const { return m_name; }
+    void setFormatter(LogFormatter::ptr val);
 
 private:
     std::string m_name;         // 日志名称
     LogLevel::Level m_level;    // 日志级别
     std::list<LogAppender::ptr> m_appenders;    // Appenders集合
+    LogFormatter::ptr m_formatter;  // 日志格式
 };
 
 
@@ -202,21 +205,21 @@ private:
 };
 
 // 日志器管理类
-class _LoggerManager {
+class LoggerManager {
 public:
-    _LoggerManager();
+    LoggerManager();
 
     void init();
     Logger::ptr getLogger(const std::string& name);
-    Logger::ptr getRoot();
+    Logger::ptr getRoot() const { return m_root; }
 
 private:
     std::map<std::string, Logger::ptr> m_loggers;
-    
+    Logger::ptr m_root;
 };
 
 // 日志器管理类单例模式
-typedef Singleton<_LoggerManager> LoggerManager;
+typedef Singleton<LoggerManager> LoggerMgr;
 
 }
 

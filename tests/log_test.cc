@@ -1,34 +1,35 @@
 #include "myserver/log.h"
 #include <iostream>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
 
-void TEST_macroDefaultLogger(){
-    auto logger = GET_ROOT_LOGGER();
-    myserver::StdoutLogAppender::ptr stdApd(new myserver::StdoutLogAppender());
-    logger->addAppender(stdApd);
+void TEST_macroLogger(){
+    myserver::Logger::ptr logger(new myserver::Logger);
+    logger->addAppender(myserver::LogAppender::ptr(new myserver::StdoutLogAppender));
     
-    myserver::FileLogAppender::ptr FileApd(
-        new myserver::FileLogAppender("./log.txt"));
+    myserver::FileLogAppender::ptr FileApd(new myserver::FileLogAppender("./log.txt"));
     logger->addAppender(FileApd);
 
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>> START <<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-    LOG_DEBUG(logger) << "debug message";
-    LOG_INFO(logger) << "info message";
-    LOG_WARN(logger) << "warn message";
-    LOG_ERROR(logger) << "error message";
-    LOG_FATAL(logger) << "fatal message";
+    myserver::LogFormatter::ptr fmt(new myserver::LogFormatter("%d%T%p%T%m%n"));
+    FileApd->setFormatter(fmt);
+    FileApd->setLevel(myserver::LogLevel::ERROR);
 
-    LOG_FMT_DEBUG(logger, "%s", "this is a DEBUG message");
-    LOG_FMT_INFO(logger, "%s", "this is a INFO message");
-    LOG_FMT_WARN(logger, "%s", "this is a WARN message");
-    LOG_FMT_ERROR(logger, "%s", "this is a ERROR message");
-    LOG_FMT_FATAL(logger, "%s", "this is a FATAL message");
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>> START <<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+    LOG_DEBUG(logger) << "Test DEBUG macro";
+    LOG_INFO(logger) << "Test INFO macro";
+    LOG_WARN(logger) << "Test WARN macro";
+    LOG_ERROR(logger) << "Test ERROR macro";
+    LOG_FATAL(logger) << "Test FATAL macro";
+
+    LOG_FMT_DEBUG(logger, "Test macro fmt %s", "DEBUG");
+    LOG_FMT_INFO(logger, "Test macro fmt %s", "INFO");
+    LOG_FMT_WARN(logger, "Test macro fmt %s", "WARN");
+    LOG_FMT_ERROR(logger, "Test macro fmt %s", "ERROR");
+    LOG_FMT_FATAL(logger, "Test macro fmt %s", "FATAL");
+
+    LOG_DEBUG(ROOT_LOGGER()) << "Test macro Root_Logger";
     std::cout << ">>>>>>>>>>>>>>>>>>>>>>>> END <<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 }
 
 int main(int argc, char** argv){    
-    TEST_macroDefaultLogger();
+    TEST_macroLogger();
     return 0;
 }

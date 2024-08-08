@@ -42,6 +42,7 @@ set(
     LIB_SRC
     myserver/util.cc
     myserver/log.cc
+    myserver/config.cc
 )
 
 # 将LIB_SRC中的文件集体打包成动态库,命名为myserver
@@ -67,6 +68,7 @@ set(
 
 self_add_executable(main_test "tests/main_test.cc" myserver "${LIBS}")
 self_add_executable(log_test "tests/log_test.cc" myserver "${LIBS}")
+self_add_executable(config_test "tests/config_test.cc" myserver "${LIBS}")
 
 # 指定执行文件的输出目录为当前文件夹下的bin目录
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

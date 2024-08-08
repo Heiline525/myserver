@@ -176,11 +176,15 @@ LogEventWrap::~LogEventWrap(){
 
 
 Logger::Logger(const std::string& name)
-    :m_name(name){
-    m_level = LogLevel::DEBUG;
+    :m_name(name)
+    ,m_level(LogLevel::DEBUG) {
+    m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
 }
 
 void Logger::addAppender(LogAppender::ptr appender){
+    if (!appender->getFormatter()){
+        appender->setFormatter(m_formatter);
+    }
     m_appenders.push_back(appender);
 }
 
@@ -193,26 +197,28 @@ void Logger::delAppender(LogAppender::ptr appender){
     }
 }
 
+void Logger::clearAppenders(){
+    m_appenders.clear();
+}
+
 void Logger::log(LogEvent::ptr event){
-    auto self = shared_from_this();
-    for (auto& appender : m_appenders){
-        appender->log(self, event);
+    if (event->getLevel() >= m_level){
+        auto self = shared_from_this();
+        for (auto& appender : m_appenders){
+            appender->log(self, event);
+        }
     }
 }
 
-LogAppender::LogAppender(LogLevel::Level level)
-    :m_level(level) {
-    m_formatter = std::make_shared<LogFormatter>();
-}
 
 void StdoutLogAppender::log(std::shared_ptr<Logger> logger, LogEvent::ptr event) {
     if (event->getLevel() >= m_level){
-        std::cout << m_formatter->format(logger, event);
+        m_formatter->format(std::cout, logger, event);
     }
 }
 
 FileLogAppender::FileLogAppender(const std::string& filename, LogLevel::Level level)
-    :LogAppender(level), m_filename(filename) {
+    :m_filename(filename) {
     reopen();
 }
 
@@ -358,26 +364,19 @@ void LogFormatter::init(){
 
 }
 
-_LoggerManager::_LoggerManager(){
-    init();
+LoggerManager::LoggerManager(){
+    m_root.reset(new Logger);
+    m_root->addAppender(LogAppender::ptr(new StdoutLogAppender));
 }
 
-void _LoggerManager::init(){
+void LoggerManager::init(){
     Logger::ptr logger = std::make_shared<Logger>("root");
     m_loggers.insert(std::make_pair("root", logger));
 }
 
-Logger::ptr _LoggerManager::getLogger(const std::string& name){
-    auto iter = m_loggers.find(name);
-    if (iter == m_loggers.end()){
-        // 日志器不存在就返回全局默认日志器
-        return m_loggers.find("root")->second;
-    }
-    return iter->second;
-}
-
-Logger::ptr _LoggerManager::getRoot(){
-    return m_loggers.find("root")->second;
+Logger::ptr LoggerManager::getLogger(const std::string& name){
+    auto it = m_loggers.find(name);
+    return it == m_loggers.end() ? m_root : it->second;
 }
 
 }
