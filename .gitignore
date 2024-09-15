@@ -37,6 +37,8 @@ html
 # cmake output
 build
 lib
+lib64
+include
 
 # bin
 *_test

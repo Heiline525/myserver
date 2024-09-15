@@ -36,6 +36,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function -Wno-builtin-macro-
 include_directories(.)
 include_directories(/apps/myserver/include)
 link_directories(/apps/myserver/lib)
+link_directories(/apps/myserver/lib64)
 
 # 将所有编写的源文件设置到变量 LIB_SRC 中
 set(
@@ -51,8 +52,7 @@ add_library(myserver SHARED ${LIB_SRC})
 # 调用 cmake/utils.cmake 中的方法，重定义目标源码的 __FILE__ 宏，使用相对路径的形式，避免暴露敏感信息
 force_redefine_file_macro_for_sources(myserver)
 
-# find_library(YAMLCPP yaml-cpp)
-
+target_link_libraries(myserver ${PROJECT_SOURCE_DIR}/lib64/libyaml-cpp.a)
 # 将所有库文件设置到变量 LIBS 中
 set(
     LIBS

@@ -1,0 +1,17 @@
+logs:
+    - name: root
+      level: info
+      appender:
+          - type: FileLogAppender
+            file: log.txt
+          - type: StdLogAppender
+    - name: system
+      level: debug
+      appender:
+          - type: FileLogAppender
+            file: log.txt
+          - type: StdLogAppender
+
+system:
+    port: 9900
+    value: 15

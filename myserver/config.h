@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <yaml-cpp/yaml.h>
 #include "myserver/log.h"
 
 namespace myserver {
@@ -16,6 +17,7 @@ public:
     ConfigVarBase(const std::string& name, const std::string& description = "")
         :m_name(name)
         ,m_description(description){
+        std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
     }
 
     virtual ~ConfigVarBase() {};
@@ -33,6 +35,8 @@ protected:
 
 
 // 配置参数模板子类,保存对应类型的参数值
+// FromStr T operator()（const std::string&)
+// ToStr std::string operator() (const T&)
 template<class T>
 class ConfigVar : public ConfigVarBase {
 public:
@@ -55,10 +59,10 @@ public:
 
     bool fromString(const std::string& val) override {
         try{
-            m_val = boost::lexical_cast<T>(m_val);
+            m_val = boost::lexical_cast<T>(val);
         }catch(std::exception& e){
             LOG_ERROR(ROOT_LOGGER()) << "ConfigVar::fromString exception"
-            << e.what() << "convert: string to " << typeid(m_val).name();
+            << e.what() << "convert: string to " << typeid(val).name();
         }
         return false;
     }
@@ -116,6 +120,17 @@ public:
         }
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
     }
+
+    // 使用YAML::Node初始化配置模块
+    static void LoadFromYaml(const YAML::Node& root);
+    static void ListAllMember(const std::string& prefix,
+                              const YAML::Node& node,
+                              std::list<std::pair<std::string, const YAML::Node>>& output);
+    /**
+     * @brief 查找配置参数, 返回配置参数的基类
+     * @param[in] name 配置参数名称
+     */
+    static ConfigVarBase::ptr LookupBase(const std::string& name);
 private:
     static ConfigVarMap s_data;
 };
