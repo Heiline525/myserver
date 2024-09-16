@@ -15,3 +15,17 @@ logs:
 system:
     port: 9900
     value: 15
+    int_vec: 
+        - 15
+        - 25
+    int_list: [10, 20, 30]
+    int_set: [30, 20, 60, 20]
+    int_uset: [30, 20, 60, 20]
+    str_int_map:
+        k1: 100
+        k2: 200
+        k3: 300
+    str_int_umap:
+        k1: 1000
+        k2: 2000
+        k3: 3000

@@ -7,6 +7,12 @@
 #include <boost/lexical_cast.hpp>
 #include <yaml-cpp/yaml.h>
 #include "myserver/log.h"
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
 
 namespace myserver {
 
@@ -33,11 +39,215 @@ protected:
     std::string m_description;  // 配置参数描述
 };
 
+// 基本类型转换
+template<class F, class T>
+class LexicalCast {
+public:
+    T operator()(const F& v) {
+        return boost::lexical_cast<T>(v);
+    }
+};
+
+// 类型转换偏特化： string --> vector
+template<class T>
+class LexicalCast<std::string, std::vector<T>> {
+public:
+    std::vector<T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::vector<T> vec_T;
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); ++i) {
+            ss.str("");
+            ss << node[i];
+            vec_T.push_back(LexicalCast<std::string, T>()(ss.str()));
+        }
+        return vec_T;
+    }
+};
+
+// 类型转换偏特化： vector --> string
+template<class T>
+class LexicalCast<std::vector<T>, std::string> {
+public:
+    std::string operator()(const std::vector<T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 类型转换偏特化： string --> list
+template<class T>
+class LexicalCast<std::string, std::list<T>> {
+public:
+    std::list<T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::list<T> list_T;
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); ++i) {
+            ss.str("");
+            ss << node[i];
+            list_T.push_back(LexicalCast<std::string, T>()(ss.str()));
+        }
+        return list_T;
+    }
+};
+
+// 类型转换偏特化： list --> string
+template<class T>
+class LexicalCast<std::list<T>, std::string> {
+public:
+    std::string operator()(const std::list<T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+
+// 类型转换偏特化： string --> set
+template<class T>
+class LexicalCast<std::string, std::set<T>> {
+public:
+    std::set<T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::set<T> set_T;
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); ++i) {
+            ss.str("");
+            ss << node[i];
+            set_T.insert(LexicalCast<std::string, T>()(ss.str()));
+        }
+        return set_T;
+    }
+};
+
+// 类型转换偏特化： set --> string
+template<class T>
+class LexicalCast<std::set<T>, std::string> {
+public:
+    std::string operator()(const std::set<T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 类型转换偏特化： string --> unordered_set
+template<class T>
+class LexicalCast<std::string, std::unordered_set<T>> {
+public:
+    std::unordered_set<T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::unordered_set<T> set_T;
+        std::stringstream ss;
+        for (size_t i = 0; i < node.size(); ++i) {
+            ss.str("");
+            ss << node[i];
+            set_T.insert(LexicalCast<std::string, T>()(ss.str()));
+        }
+        return set_T;
+    }
+};
+
+// 类型转换偏特化： unordered_set --> string
+template<class T>
+class LexicalCast<std::unordered_set<T>, std::string> {
+public:
+    std::string operator()(const std::unordered_set<T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 类型转换偏特化： string --> map
+template<class T>
+class LexicalCast<std::string, std::map<std::string, T> > {
+public:
+    std::map<std::string, T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::map<std::string, T> map_T;
+        std::stringstream ss;
+        for (auto it = node.begin(); it != node.end(); ++it) {
+            ss.str("");
+            ss << it->second;
+            map_T.insert(std::make_pair(it->first.Scalar(), 
+                                        LexicalCast<std::string, T>()(ss.str())));
+        }
+        return map_T;
+    }
+};
+
+// 类型转换偏特化： map --> string
+template<class T>
+class LexicalCast<std::map<std::string, T>, std::string> {
+public:
+    std::string operator()(const std::map<std::string, T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
+// 类型转换偏特化： string --> unordered_map
+template<class T>
+class LexicalCast<std::string, std::unordered_map<std::string, T> > {
+public:
+    std::unordered_map<std::string, T> operator()(const std::string& v) { 
+        YAML::Node node = YAML::Load(v);
+        typename std::unordered_map<std::string, T> map_T;
+        std::stringstream ss;
+        for (auto it = node.begin(); it != node.end(); ++it) {
+            ss.str("");
+            ss << it->second;
+            map_T.insert(std::make_pair(it->first.Scalar(), 
+                                        LexicalCast<std::string, T>()(ss.str())));
+        }
+        return map_T;
+    }
+};
+
+// 类型转换偏特化： unordered_map --> string
+template<class T>
+class LexicalCast<std::unordered_map<std::string, T>, std::string> {
+public:
+    std::string operator()(const std::unordered_map<std::string, T>& v) {    
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
 
 // 配置参数模板子类,保存对应类型的参数值
-// FromStr T operator()（const std::string&)
-// ToStr std::string operator() (const T&)
-template<class T>
+// FromStr T operator()（const std::string&)，默认特例化支持基本类型转换
+// ToStr std::string operator() (const T&)，默认特例化支持基本类型转换
+template<class T, class FromStr = LexicalCast<std::string, T>, 
+                  class ToStr = LexicalCast<T, std::string> >
 class ConfigVar : public ConfigVarBase {
 public:
     typedef std::shared_ptr<ConfigVar> ptr;
@@ -49,20 +259,20 @@ public:
 
     std::string toString() override {
         try{
-            return boost::lexical_cast<std::string>(m_val);
+            return ToStr()(m_val);
         }catch(std::exception& e){
-            LOG_ERROR(ROOT_LOGGER()) << "ConfigVar::toString exception"
-            << e.what() << "convert: " << typeid(m_val).name() << " to string";
+            LOG_ERROR(ROOT_LOGGER()) << "ConfigVar::toString exception "
+            << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
 
     bool fromString(const std::string& val) override {
         try{
-            m_val = boost::lexical_cast<T>(val);
+            setValue(FromStr()(val));
         }catch(std::exception& e){
-            LOG_ERROR(ROOT_LOGGER()) << "ConfigVar::fromString exception"
-            << e.what() << "convert: string to " << typeid(val).name();
+            LOG_ERROR(ROOT_LOGGER()) << "ConfigVar::fromString exception "
+            << e.what() << " convert: string to " << typeid(val).name();
         }
         return false;
     }
@@ -85,7 +295,7 @@ public:
      * @param[in] description 参数描述
      * @details 获取参数名为name的配置参数,如果存在直接返回
      *          如果不存在,创建参数配置并用default_value赋值
-     * @return 返回对应的配置参数,如果参数名存在但是类型不匹配则返回nullptr
+     * @return 返回对应的配置参数, 如果参数名存在但是类型不匹配则返回nullptr
      * @exception 如果参数名包含非法字符[^0-9a-z_.] 抛出异常 std::invalid_argument
      */
     template<class T>
