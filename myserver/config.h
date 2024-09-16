@@ -33,7 +33,7 @@ public:
 
     virtual std::string toString() = 0;
     virtual bool fromString(const std::string& val) = 0;
-
+    virtual std::string getTypeName() const = 0;
 protected:
     std::string m_name;         // 配置参数名称
     std::string m_description;  // 配置参数描述
@@ -277,6 +277,7 @@ public:
         return false;
     }
 
+    std::string getTypeName() const override { return typeid(T).name(); }
     const T getValue() const { return m_val; }
     void setValue(const T& val) { m_val = val; }
 private:
@@ -301,11 +302,21 @@ public:
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name,
             const T& default_value, const std::string& description = ""){
-        auto tmp = Lookup<T>(name);
-        if (tmp){
-            LOG_INFO(ROOT_LOGGER()) << "Lookup name=" << name << " exists";
-            return tmp;
+        auto it = s_data.find(name);
+        if (it != s_data.end()) {
+            auto tmp = std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
+            if (tmp){
+                LOG_INFO(ROOT_LOGGER()) << "Lookup name=" << name << " exists";
+                return tmp;
+            } else {
+                LOG_ERROR(ROOT_LOGGER()) << "Lookup name=" << name 
+                                         << " exists but type not " << typeid(T).name()
+                                         << " real_type=" << it->second->getTypeName()
+                                         << " " << it->second->toString();
+                return nullptr;
+            }
         }
+
         if (name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIGKLMNOPQRSTUVWXYZ._0123456789") 
                 != std::string::npos){
             LOG_ERROR(ROOT_LOGGER()) << "Lookup name invaild" << name;
