@@ -114,6 +114,10 @@ public:
            << "]";
         return ss.str();
     }
+
+    bool operator==(const Person& rhs) const {
+        return m_name == rhs.m_name && m_age == rhs.m_age && m_sex == rhs.m_sex;
+    }
     std::string m_name = "";
     int m_age = 0;
     bool m_sex = 0;
@@ -162,6 +166,10 @@ myserver::ConfigVar<std::map<std::string, std::vector<Person>>>::ptr g_person_ve
 void testClass() {
     LOG_INFO(ROOT_LOGGER()) << "before: " << g_person->getValue().toString(); 
     LOG_INFO(ROOT_LOGGER()) << "before yaml " << g_person->toString();
+    g_person->addListener(10, [](const Person& old_value, const Person& new_value) {
+        LOG_INFO(ROOT_LOGGER()) << "old_value= " << old_value.toString()
+                                << "new_value= " << new_value.toString();
+    });
 
 #define XX_PM(g_var, prefix){                                           \
         auto m = g_person_map->getValue();                              \
@@ -182,6 +190,7 @@ void testClass() {
     XX_PM(g_person_map, "class.map after");
     LOG_INFO(ROOT_LOGGER()) << "after: " << g_person_vec_map->toString();
 }   
+
 
 int main(int argc,char** argv){
     // testYaml();

@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <set>
 #include <unordered_set>
+#include <functional>
 
 namespace myserver {
 
@@ -251,6 +252,7 @@ template<class T, class FromStr = LexicalCast<std::string, T>,
 class ConfigVar : public ConfigVarBase {
 public:
     typedef std::shared_ptr<ConfigVar> ptr;
+    typedef std::function<void (const T& old_value, const T& new_value)> on_change_cb;
 
     ConfigVar(const std::string& name, const T& default_value, const std::string& description = "")
         :ConfigVarBase(name, description)
@@ -279,9 +281,28 @@ public:
 
     std::string getTypeName() const override { return typeid(T).name(); }
     const T getValue() const { return m_val; }
-    void setValue(const T& val) { m_val = val; }
+    // 设置当前参数的值,如果参数的值有发生变化,则通知对应的注册回调函数
+    void setValue(const T& val) { 
+        if (m_val == val) {
+            return;
+        }
+        for (auto &i : m_cbs) {
+            i.second(m_val, val);   // 传入旧值，新值给回调函数
+        }
+        m_val = val;
+    }
+    
+    // 对于变更回调函数数组的管理
+    void addListener(uint64_t key, on_change_cb cb) { m_cbs[key] = cb; }
+    void delListener(uint64_t key) { m_cbs.erase(key); }
+    on_change_cb getListener(uint64_t key) {
+        auto it = m_cbs.find(key);
+        return it == m_cbs.end() ? nullptr : it->second;
+    }
+    void clearListener() { m_cbs.clear(); }
 private:
     T m_val;
+    std::map<uint64_t, on_change_cb> m_cbs;     // 变更回调函数数组，uint64_t唯一，一般使用hash值
 };
 
 // ConfigVar的管理类
