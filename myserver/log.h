@@ -227,7 +227,6 @@ class LoggerManager {
 public:
     LoggerManager();
 
-    void init();
     Logger::ptr getLogger(const std::string& name);
     Logger::ptr getRoot() const { return m_root; }
 

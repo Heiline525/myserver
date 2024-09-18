@@ -194,18 +194,18 @@ void testClass() {
 void testLog() {
     static myserver::Logger::ptr system_log = LOGGER_NAME("system");
     LOG_INFO(system_log) << "hello system log";
-    // std::cout << "===================LoggerMgr====================" << std::endl;
-    // std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
-    // std::cout << "===================LoadYaml=====================" << std::endl;
-    // YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
-    // myserver::Config::LoadFromYaml(root);
-    // std::cout << "===================LoggerMgr====================" << std::endl;
-    // std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
-    // std::cout << "===================YamlConfig===================" << std::endl;
-    // std::cout << root << std::endl;
-    // std::cout << "================================================" << std::endl;
-    // LOG_INFO(system_log) << "hello system" << std::endl;
-    // system_log->setFormatter("%d - %m%n");
+    std::cout << "===================LoggerMgr====================" << std::endl;
+    std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    std::cout << "===================LoadYaml=====================" << std::endl;
+    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
+    myserver::Config::LoadFromYaml(root);
+    std::cout << "===================LoggerMgr====================" << std::endl;
+    std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    std::cout << "===================YamlConfig===================" << std::endl;
+    std::cout << root << std::endl;
+    std::cout << "================================================" << std::endl;
+    LOG_INFO(system_log) << "hello system" << std::endl;
+    system_log->setFormatter("%d - %m%n");
     // LOG_INFO(system_log) << "hello system" << std::endl;
 }
 
