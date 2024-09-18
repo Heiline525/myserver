@@ -55,7 +55,7 @@ void printYaml(const YAML::Node& node, int level){
 }
 
 void testYaml() {
-    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
+    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/test.yml");
     printYaml(root, 0);
 }
 
@@ -89,7 +89,7 @@ void testConfig(){
     XX_MAP(g_str_int_map_value_config, str_int_map, before);
     XX_MAP(g_str_int_umap_value_config, str_int_umap, before);
 
-    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
+    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/test.yml");
     myserver::Config::LoadFromYaml(root);
     
     LOG_INFO(ROOT_LOGGER()) << "after: " << g_int_value_config->getValue();
@@ -165,10 +165,10 @@ myserver::ConfigVar<std::map<std::string, std::vector<Person>>>::ptr g_person_ve
 
 void testClass() {
     LOG_INFO(ROOT_LOGGER()) << "before: " << g_person->getValue().toString(); 
-    LOG_INFO(ROOT_LOGGER()) << "before yaml " << g_person->toString();
+    // LOG_INFO(ROOT_LOGGER()) << "before yaml " << g_person->toString();
     g_person->addListener(10, [](const Person& old_value, const Person& new_value) {
-        LOG_INFO(ROOT_LOGGER()) << "old_value= " << old_value.toString()
-                                << "new_value= " << new_value.toString();
+        LOG_INFO(ROOT_LOGGER()) << "old_value=" << old_value.toString()
+                                << ", new_value=" << new_value.toString();
     });
 
 #define XX_PM(g_var, prefix){                                           \
@@ -182,19 +182,37 @@ void testClass() {
     XX_PM(g_person_map, "class.map before");
     LOG_INFO(ROOT_LOGGER()) << "before: " << g_person_vec_map->toString();
 
-    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
+    YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/test.yml");
     myserver::Config::LoadFromYaml(root);
 
     LOG_INFO(ROOT_LOGGER()) << "after: " << g_person->getValue().toString();
-    LOG_INFO(ROOT_LOGGER()) << "after yaml " << g_person->toString();
+    // LOG_INFO(ROOT_LOGGER()) << "after yaml: " << g_person->toString();
     XX_PM(g_person_map, "class.map after");
-    LOG_INFO(ROOT_LOGGER()) << "after: " << g_person_vec_map->toString();
+    // LOG_INFO(ROOT_LOGGER()) << "after yaml: " << g_person_vec_map->toString();
 }   
 
+void testLog() {
+    static myserver::Logger::ptr system_log = LOGGER_NAME("system");
+    LOG_INFO(system_log) << "hello system log";
+    // std::cout << "===================LoggerMgr====================" << std::endl;
+    // std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    // std::cout << "===================LoadYaml=====================" << std::endl;
+    // YAML::Node root = YAML::LoadFile("/apps/myserver/bin/conf/log.yml");
+    // myserver::Config::LoadFromYaml(root);
+    // std::cout << "===================LoggerMgr====================" << std::endl;
+    // std::cout << myserver::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    // std::cout << "===================YamlConfig===================" << std::endl;
+    // std::cout << root << std::endl;
+    // std::cout << "================================================" << std::endl;
+    // LOG_INFO(system_log) << "hello system" << std::endl;
+    // system_log->setFormatter("%d - %m%n");
+    // LOG_INFO(system_log) << "hello system" << std::endl;
+}
 
 int main(int argc,char** argv){
     // testYaml();
     // testConfig();
-    testClass();
+    // testClass();
+    testLog();
     return 0;
 }

@@ -1,11 +1,10 @@
 #include "config.h"
 
 namespace myserver {
-Config::ConfigVarMap Config::s_data;
 
 ConfigVarBase::ptr Config::LookupBase(const std::string& name) {
-    auto it = s_data.find(name);
-    return it == s_data.end() ? nullptr : it->second;
+    auto it = GetDatas().find(name);
+    return it == GetDatas().end() ? nullptr : it->second;
 }
 
 // "A.B", 10
@@ -31,7 +30,7 @@ void Config::ListAllMember(const std::string& prefix,
 void Config::LoadFromYaml(const YAML::Node& root) {
     std::list<std::pair<std::string, const YAML::Node> > all_nodes;
     ListAllMember("", root, all_nodes);
-
+    
     for(auto& i : all_nodes) {
         std::string key = i.first;
         if(key.empty()) {
@@ -42,7 +41,7 @@ void Config::LoadFromYaml(const YAML::Node& root) {
         ConfigVarBase::ptr var = LookupBase(key);
 
         if(var) {
-            // 查找约定存在，修改配置参数的值
+            // 查找约定存在，修改并设置配置参数的值
             if(i.second.IsScalar()) {
                 var->fromString(i.second.Scalar());
             } else {

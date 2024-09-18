@@ -323,8 +323,8 @@ public:
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name,
             const T& default_value, const std::string& description = ""){
-        auto it = s_data.find(name);
-        if (it != s_data.end()) {
+        auto it = GetDatas().find(name);
+        if (it != GetDatas().end()) {
             auto tmp = std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
             if (tmp){
                 LOG_INFO(ROOT_LOGGER()) << "Lookup name=" << name << " exists";
@@ -345,7 +345,7 @@ public:
         }
 
         typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, default_value, description));
-        s_data[name] = v;
+        GetDatas()[name] = v;
         return v;
     }
 
@@ -356,8 +356,8 @@ public:
      */
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name){
-        auto it = s_data.find(name);
-        if (it == s_data.end()){
+        auto it = GetDatas().find(name);
+        if (it == GetDatas().end()){
             return nullptr;
         }
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
@@ -374,7 +374,10 @@ public:
      */
     static ConfigVarBase::ptr LookupBase(const std::string& name);
 private:
-    static ConfigVarMap s_data;
+    static ConfigVarMap& GetDatas() {
+        static ConfigVarMap s_data;
+        return s_data;
+    }
 };
 
 
