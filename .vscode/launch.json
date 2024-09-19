@@ -37,7 +37,8 @@
             "options": [
                 "config_test",
                 "main_test",
-                "log_test"
+                "log_test",
+                "thread_test"
             ],
             "default": "main_test"
         }

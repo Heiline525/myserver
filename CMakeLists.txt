@@ -34,9 +34,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function -Wno-builtin-macro-
 
 # 将当前目录添加到编译器的头文件搜索目录中
 include_directories(.)
-include_directories(/apps/myserver/include)
-link_directories(/apps/myserver/lib)
-link_directories(/apps/myserver/lib64)
+include_directories(${PROJECT_SOURCE_DIR}/myserver)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+# 链接库目录
+link_directories(${PROJECT_SOURCE_DIR}/lib)
+link_directories(${PROJECT_SOURCE_DIR}/lib64)
 
 # 将所有编写的源文件设置到变量 LIB_SRC 中
 set(
@@ -44,6 +47,8 @@ set(
     myserver/util.cc
     myserver/log.cc
     myserver/config.cc
+    myserver/thread.cc
+    myserver/mutex.cc
 )
 
 # 将LIB_SRC中的文件集体打包成动态库,命名为myserver
@@ -56,6 +61,7 @@ target_link_libraries(myserver ${PROJECT_SOURCE_DIR}/lib64/libyaml-cpp.a)
 # 将所有库文件设置到变量 LIBS 中
 set(
     LIBS
+    pthread
     myserver
 )
 
@@ -69,6 +75,7 @@ set(
 self_add_executable(main_test "tests/main_test.cc" myserver "${LIBS}")
 self_add_executable(log_test "tests/log_test.cc" myserver "${LIBS}")
 self_add_executable(config_test "tests/config_test.cc" myserver "${LIBS}")
+self_add_executable(thread_test "tests/thread_test.cc" myserver "${LIBS}")
 
 # 指定执行文件的输出目录为当前文件夹下的bin目录
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

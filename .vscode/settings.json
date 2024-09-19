@@ -48,6 +48,9 @@
         "unordered_set": "cpp",
         "string": "cpp",
         "random": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp",
+        "thread": "cpp"
     }
 }
